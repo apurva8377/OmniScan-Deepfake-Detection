@@ -53,4 +53,4 @@ pip install -r requirements.txt
 
 * **Apurva**
 * GitHub: [apurva8377](https://github.com/apurva8377)
-* LinkedIn: [apurva](https://www.linkedin.com/in/apurva-8377)
+* LinkedIn: [apurva-shinde](https://www.linkedin.com/in/apurva-shinde-149383384/)
