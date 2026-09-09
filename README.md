@@ -49,8 +49,8 @@ pip install -r requirements.txt
 # 3. Run the API Server
 ## Author
 
+## Author
+
 * **Apurva**
 * GitHub: [apurva8377](https://github.com/apurva8377)
-* LinkedIn: [Your LinkedIn Profile](https://linkedin.com/in/your-profile)
-python manage.py runserver
-
+* LinkedIn: [apurva](https://www.linkedin.com/in/apurva-8377)
