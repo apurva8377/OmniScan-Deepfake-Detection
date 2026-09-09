@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Shield</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes gradient-mix {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; text-align: center; margin: 0; padding: 0; }
+        
+        /* ========================================= */
+        /* PROFESSIONAL NAVIGATION BAR WITH DROPDOWN */
+        /* ========================================= */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(10px);
+            padding: 15px 40px; border-bottom: 1px solid #30363d;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000;
+        }
+        .nav-left { display: flex; align-items: center; gap: 40px; }
+        .nav-logo { font-size: 20px; font-weight: 700; color: #c9d1d9; text-decoration: none; display: flex; align-items: center; gap: 10px; letter-spacing: 1px; }
+        .nav-logo i { color: #00ff88; font-size: 24px; }
+        
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links a.main-link { color: #8b949e; text-decoration: none; font-size: 15px; font-weight: 600; transition: color 0.2s; display: flex; align-items: center; gap: 8px; }
+        .nav-links a.main-link:hover, .nav-links a.main-link.active { color: #ffffff; }
+        .nav-links a.main-link.active i { color: #58a6ff; }
+
+        /* THE INVISIBLE BRIDGE DROPDOWN */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown::after { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 25px; background: transparent; }
+        .dropdown-content {
+            display: none; position: absolute; background-color: #161b22; 
+            min-width: 260px; box-shadow: 0 8px 24px rgba(0,0,0,0.7); z-index: 9999;
+            border-radius: 8px; border: 1px solid #30363d; top: calc(100% + 15px); left: 0; overflow: hidden;
+        }
+        .dropdown-content a {
+            color: #c9d1d9; padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px;
+            font-size: 13px; transition: background 0.2s; border-bottom: 1px solid #21262d; text-align: left; font-weight: 600;
+        }
+        .dropdown-content a i { width: 15px; text-align: center; }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: #21262d; color: #ffffff; }
+        .dropdown:hover .dropdown-content { display: block; }
+        
+        .nav-right { color: #8b949e; font-size: 13px; font-weight: 600; }
+
+        .main-content { padding: 40px; }
+        h1 { color: #00ff88; margin-bottom: 5px; font-weight: 600; letter-spacing: 1px; }
+        .subtitle { color: #8b949e; margin-bottom: 30px; font-size: 15px; }
+
+        .upload-box { 
+            border: 2px dashed #30363d; padding: 40px; width: 50%; max-width: 600px; 
+            margin: 0 auto; border-radius: 12px; background: #161b22; 
+            transition: all 0.3s ease; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .upload-box:hover, .upload-box.dragover { background: #1c2128; border-color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+        .upload-icon { font-size: 40px; color: #58a6ff; margin-bottom: 15px; }
+        
+        .web-scan-options { margin: 30px auto; text-align: left; display: inline-block; background: #161b22; padding: 25px 35px; border-radius: 12px; border: 1px solid #30363d; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .web-scan-options label { display: flex; align-items: center; margin-bottom: 15px; cursor: pointer; font-size: 16px; color: #c9d1d9; transition: color 0.2s; }
+        .web-scan-options label:hover { color: #ffffff; }
+        .web-scan-options label i { width: 25px; color: #8b949e; margin-right: 10px; text-align: center; font-size: 18px; }
+        .web-scan-options input[type="checkbox"] { transform: scale(1.3); margin-right: 15px; cursor: pointer; accent-color: #00ff88; }
+
+        button.primary-btn { 
+            margin-top: 15px; padding: 16px 35px; font-size: 16px; border-radius: 8px; border: none; background: #21262d; 
+            color: #c9d1d9; font-weight: 600; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.5px; position: relative; overflow: hidden; 
+        }
+        button.primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.primary-btn::after {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 300%; height: 300%;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
+            transform: translate(-50%, -50%) scale(0); opacity: 0; border-radius: 50%; pointer-events: none; 
+        }
+        .btn-animate::after { animation: fluid-ripple 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        @keyframes fluid-ripple { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+
+        /* ========================================= */
+        /* NEW: CHECKPOINT BUTTON STYLES             */
+        /* ========================================= */
+        .video-container { position: relative; width: 50%; max-width: 600px; margin: 20px auto 0; display: none; }
+        #video-preview { width: 100%; border-radius: 8px; border: 1px solid #30363d; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: block; }
+        
+        #checkpoint-btn {
+            display: none; position: absolute; top: -15px; right: -15px; background: #161b22; border: 2px solid #58a6ff;
+            color: #58a6ff; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 10px rgba(88, 166, 255, 0.4); transition: all 0.3s ease; z-index: 10;
+        }
+        #checkpoint-btn:hover { background: #58a6ff; color: #ffffff; box-shadow: 0 0 15px rgba(88, 166, 255, 0.8); transform: scale(1.05); }
+        #checkpoint-btn i { margin-right: 5px; }
+        
+        #result { margin-top: 30px; font-size: 24px; font-weight: 700; min-height: 35px; letter-spacing: 1px; }
+        
+        /* EXPLAINABLE AI (XAI) EVIDENCE CARDS */
+        #graph-container { display: flex; justify-content: center; gap: 40px; margin-top: 20px; display: none; padding: 20px; }
+        .graph-column { display: flex; flex-direction: column; align-items: center; width: 100px; }
+        .graph-title { font-size: 13px; color: #8b949e; margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
+        .graph-box { position: relative; width: 45px; height: 180px; background: #0d1117; border-radius: 6px; border: 1px solid #30363d; overflow: hidden; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5); }
+        .zero-line { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.2); z-index: 10; }
+        .bar-real { position: absolute; bottom: 50%; left: 0; width: 100%; background: linear-gradient(0deg, #238636, #2ea043); transition: height 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 4px 4px 0 0; }
+        .bar-fake { position: absolute; top: 50%; left: 0; width: 100%; background: linear-gradient(180deg, #da3633, #f85149); transition: height 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 0 0 4px 4px; }
+        .graph-percentage { font-size: 16px; font-weight: 700; margin-top: 12px; }
+
+        #frames-container { display: none; margin-top: 30px; text-align: left; background: #161b22; padding: 25px; border-radius: 12px; width: 70%; max-width: 800px; margin-left: auto; margin-right: auto; border: 1px solid #30363d; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        summary { cursor: pointer; color: #58a6ff; font-weight: 600; font-size: 16px; outline: none; transition: color 0.2s;}
+        summary:hover { color: #79c0ff; }
+        
+        #frames-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
+        .xai-card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; width: 220px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s; }
+        .xai-card:hover { transform: translateY(-5px); }
+        .xai-header { padding: 10px; font-size: 12px; font-weight: 700; color: #c9d1d9; text-transform: uppercase; letter-spacing: 1px; background: #161b22; border-bottom: 1px solid #30363d; }
+        .xai-header i { margin-right: 5px; }
+        .xai-image-wrapper { position: relative; width: 100%; height: 124px; background: #000; overflow: hidden; }
+        .xai-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .target-box { position: absolute; top: 15%; left: 30%; width: 40%; height: 60%; border: 2px dashed; border-radius: 10px; pointer-events: none; }
+        .ela-scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: rgba(0, 255, 136, 0.8); box-shadow: 0 0 10px #00ff88; animation: scan-down 2s linear infinite; }
+        @keyframes scan-down { 0% { top: 0; } 100% { top: 100%; } }
+        
+        .audio-waves { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; align-items: flex-end; height: 40px; }
+        .audio-waves .bar { width: 6px; background: currentColor; border-radius: 3px; animation: sound 0.5s ease infinite alternate; opacity: 0.8; }
+        .audio-waves .bar:nth-child(1) { animation-duration: 0.4s; }
+        .audio-waves .bar:nth-child(2) { animation-duration: 0.2s; }
+        .audio-waves .bar:nth-child(3) { animation-duration: 0.6s; }
+        .audio-waves .bar:nth-child(4) { animation-duration: 0.3s; }
+        .audio-waves .bar:nth-child(5) { animation-duration: 0.5s; }
+        @keyframes sound { 0% { height: 5px; } 100% { height: 100%; } }
+
+        .xai-footer { padding: 12px; font-size: 13px; font-weight: 700; background: #161b22; border-top: 1px solid #30363d; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="javascript:void(0);" class="nav-logo"><i class="fa-solid fa-shield-halved"></i> Deepfake Shield</a>
+            <div class="nav-links">
+                <a href="javascript:void(0);" class="main-link active"><i class="fa-solid fa-house"></i> Home</a>
+                
+                <div class="dropdown">
+                    <a href="javascript:void(0);" class="main-link"><i class="fa-solid fa-layer-group"></i> Detection Modes <i class="fa-solid fa-caret-down" style="font-size:12px; margin-left:3px;"></i></a>
+                    <div class="dropdown-content">
+                        <a href="javascript:void(0);" onclick="selectMode(['face'])"><i class="fa-solid fa-users-viewfinder" style="color: #6b48ff;"></i> Biometric Scan</a>
+                        <a href="javascript:void(0);" onclick="selectMode(['frame'])"><i class="fa-solid fa-object-group" style="color: #ff8c00;"></i> Spatial Scan</a>
+                        <a href="javascript:void(0);" onclick="selectMode(['audio'])"><i class="fa-solid fa-wave-square" style="color: #00b4d8;"></i> Audio Scan</a>
+                        
+                        <a href="javascript:void(0);" onclick="selectMode(['face', 'audio'])"><i class="fa-solid fa-bolt" style="color: #00b4d8;"></i> Bio + Audio Fusion</a>
+                        <a href="javascript:void(0);" onclick="selectMode(['face', 'frame'])"><i class="fa-solid fa-bolt" style="color: #ff8c00;"></i> Bio + Spatial Fusion</a>
+                        <a href="javascript:void(0);" onclick="selectMode(['frame', 'audio'])"><i class="fa-solid fa-bolt" style="color: #00b4d8;"></i> Spatial + Audio Fusion</a>
+                        
+                        <a href="javascript:void(0);" onclick="selectMode(['face', 'frame', 'audio'])" style="color: #00ff88; background: #111;"><i class="fa-solid fa-globe"></i> OMNI-SCAN ENGINE</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            System Status: <span style="color:#00ff88;"><i class="fa-solid fa-circle-check"></i> Online</span>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <h1><i class="fa-solid fa-microchip"></i> AI Forensics Dashboard</h1>
+        <p class="subtitle">Secure multi-modal neural network analysis.</p>
+
+        <div class="upload-box" id="drop-zone">
+            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+            <p id="drop-text" style="margin: 0; font-size: 16px;">Drag & Drop video file here, or click to browse</p>
+            <input type="file" id="file-input" style="display: none;" accept="video/mp4, video/webm">
+        </div>
+
+        <div class="video-container" id="video-container">
+            <video id="video-preview" controls></video>
+            <button id="checkpoint-btn" onclick="restoreCheckpoint()" title="Return to exact time of last scan">
+                <i class="fa-solid fa-location-crosshairs"></i> Load Checkpoint
+            </button>
+        </div>
+
+        <div class="web-scan-options">
+            <label><input type="checkbox" class="web-model-toggle" value="face"> <i class="fa-solid fa-users-viewfinder"></i> Biometric Scan (Facial Mesh)</label>
+            <label><input type="checkbox" class="web-model-toggle" value="frame"> <i class="fa-solid fa-object-group"></i> Spatial Scan (ELA Anomalies)</label>
+            <label style="margin-bottom: 0;"><input type="checkbox" class="web-model-toggle" value="audio"> <i class="fa-solid fa-wave-square"></i> Audio Scan (Vocal Frequencies)</label>
+        </div>
+        
+        <br>
+        <button onclick="uploadVideo()" id="run-btn" class="primary-btn" disabled><i class="fa-solid fa-lock"></i> Select configuration to unlock</button>
+
+        <div id="result"></div>
+        <div id="graph-container"></div>
+
+        <div id="frames-container">
+            <details open>
+                <summary><i class="fa-solid fa-folder-tree"></i> View Explainable AI Artifacts</summary>
+                <p style="font-size: 13px; color: #8b949e; margin-top: 8px;">Direct visual output from the PyTorch inference engine.</p>
+                <div id="frames-grid"></div>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // UI & DRAG-AND-DROP LOGIC
+        // ==========================================
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const dropText = document.getElementById('drop-text');
+        const videoContainer = document.getElementById('video-container');
+        const videoPreview = document.getElementById('video-preview');
+        const checkpointBtn = document.getElementById('checkpoint-btn');
+
+        // NEW: The variable to hold our saved timestamp
+        let savedCheckpointTime = null;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                loadVideoPreview();
+            }
+        });
+        fileInput.addEventListener('change', loadVideoPreview);
+
+        function loadVideoPreview() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                dropText.innerHTML = `<strong style="color: #c9d1d9;">Loaded:</strong> <span style="color: #58a6ff;">${file.name}</span> <br><span style="font-size:12px; color:#8b949e; display:inline-block; margin-top:8px;">(Click or drop again to replace)</span>`;
+                videoPreview.src = URL.createObjectURL(file);
+                
+                // Show the container instead of just the video directly
+                videoContainer.style.display = 'block'; 
+                
+                // Reset everything on new video load
+                savedCheckpointTime = null;
+                checkpointBtn.style.display = 'none';
+                
+                document.getElementById('result').innerText = '';
+                document.getElementById('graph-container').style.display = 'none';
+                document.getElementById('frames-container').style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // NEW: CHECKPOINT RESTORE FUNCTION
+        // ==========================================
+        function restoreCheckpoint() {
+            if (savedCheckpointTime !== null) {
+                videoPreview.currentTime = savedCheckpointTime;
+                
+                // Optional: Flash the button green to show it worked
+                const originalBg = checkpointBtn.style.background;
+                checkpointBtn.style.background = "#2ea043";
+                checkpointBtn.style.borderColor = "#2ea043";
+                checkpointBtn.style.color = "#fff";
+                checkpointBtn.innerHTML = "<i class='fa-solid fa-check'></i> Checkpoint Loaded";
+                
+                setTimeout(() => {
+                    checkpointBtn.style.background = originalBg;
+                    checkpointBtn.style.borderColor = "#58a6ff";
+                    checkpointBtn.style.color = "#58a6ff";
+                    checkpointBtn.innerHTML = "<i class='fa-solid fa-location-crosshairs'></i> Load Checkpoint";
+                }, 1000);
+            }
+        }
+
+        // ==========================================
+        // STATE MACHINE FOR CHECKBOXES & DROPDOWN
+        // ==========================================
+        const webCheckboxes = document.querySelectorAll('.web-model-toggle');
+        const runBtn = document.getElementById('run-btn');
+        let webActiveMode = 'none'; 
+
+        function selectMode(modelsArray) {
+            webCheckboxes.forEach(box => box.checked = false);
+            modelsArray.forEach(modelValue => {
+                const checkbox = document.querySelector(`input[value="${modelValue}"]`);
+                if(checkbox) checkbox.checked = true;
+            });
+            updateWebButtonState();
+        }
+
+        function updateWebButtonState() {
+            const selected = Array.from(webCheckboxes).filter(box => box.checked).map(box => box.value).sort(); 
+            const combo = selected.join('_'); 
+
+            runBtn.disabled = false;
+            runBtn.style.color = "#ffffff"; 
+            
+            runBtn.style.backgroundSize = "100% 100%";
+            runBtn.style.animation = "none";
+            runBtn.style.boxShadow = "none";
+
+            switch (combo) {
+                case 'face': webActiveMode = 'face'; runBtn.innerHTML = "<i class='fa-solid fa-play'></i> Run Biometric Analysis"; runBtn.style.background = "#6b48ff"; break;
+                case 'frame': webActiveMode = 'frame'; runBtn.innerHTML = "<i class='fa-solid fa-play'></i> Run Spatial Analysis"; runBtn.style.background = "#ff8c00"; break;
+                case 'audio': webActiveMode = 'audio'; runBtn.innerHTML = "<i class='fa-solid fa-play'></i> Run Audio Analysis"; runBtn.style.background = "#00b4d8"; break;
+                case 'audio_face': webActiveMode = 'fusion_audio_face'; runBtn.innerHTML = "<i class='fa-solid fa-bolt'></i> Deep Face Scan (Bio + Audio)"; runBtn.style.background = "linear-gradient(90deg, #6b48ff, #00b4d8, #6b48ff)"; runBtn.style.backgroundSize = "200% 200%"; runBtn.style.animation = "gradient-mix 3s ease infinite"; break;
+                case 'face_frame': webActiveMode = 'fusion_face_frame'; runBtn.innerHTML = "<i class='fa-solid fa-bolt'></i> Deep Visual Scan (Bio + Spatial)"; runBtn.style.background = "linear-gradient(90deg, #6b48ff, #ff8c00, #6b48ff)"; runBtn.style.backgroundSize = "200% 200%"; runBtn.style.animation = "gradient-mix 3s ease infinite"; break;
+                case 'audio_frame': webActiveMode = 'fusion_audio_frame'; runBtn.innerHTML = "<i class='fa-solid fa-bolt'></i> Environment Scan (Spatial + Audio)"; runBtn.style.background = "linear-gradient(90deg, #ff8c00, #00b4d8, #ff8c00)"; runBtn.style.backgroundSize = "200% 200%"; runBtn.style.animation = "gradient-mix 3s ease infinite"; break;
+                case 'audio_face_frame': webActiveMode = 'fusion_all'; runBtn.innerHTML = "<i class='fa-solid fa-globe'></i> OMNI-SCAN ENGINE (Full Forensic Analysis)"; runBtn.style.background = "linear-gradient(90deg, #f85149, #6b48ff, #58a6ff, #f85149)"; runBtn.style.backgroundSize = "300% 300%"; runBtn.style.animation = "gradient-mix 2.5s ease infinite"; runBtn.style.boxShadow = "0px 0px 15px rgba(107, 72, 255, 0.5)"; break;
+                default: webActiveMode = 'none'; runBtn.innerHTML = "<i class='fa-solid fa-lock'></i> Select configuration to unlock"; runBtn.style.background = "#21262d"; runBtn.disabled = true; runBtn.style.color = "#8b949e"; break;
+            }
+
+            runBtn.classList.remove('btn-animate');
+            setTimeout(() => { runBtn.classList.add('btn-animate'); }, 10);
+        }
+        webCheckboxes.forEach(box => box.addEventListener('change', updateWebButtonState));
+        updateWebButtonState();
+
+        // ==========================================
+        // API COMMUNICATION & EXPLAINABLE AI
+        // ==========================================
+        async function uploadVideo() {
+            const resultDiv = document.getElementById('result');
+            const graphContainer = document.getElementById('graph-container');
+            const framesContainer = document.getElementById('frames-container');
+            const grid = document.getElementById('frames-grid');
+
+            if (!fileInput.files[0]) { resultDiv.innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i> Please select a video first."; resultDiv.style.color = "#f85149"; return; }
+
+            // NEW: SAVE THE CHECKPOINT
+            savedCheckpointTime = videoPreview.currentTime;
+            checkpointBtn.style.display = 'block'; // Make the button appear!
+
+            resultDiv.innerHTML = "<i class='fa-solid fa-circle-notch fa-spin'></i> Capturing 5s segment for AI Analysis...";
+            resultDiv.style.color = "#58a6ff";
+            runBtn.disabled = true;
+            runBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Processing...";
+            graphContainer.style.display = 'none';
+            framesContainer.style.display = 'none';
+
+            if (videoPreview.paused) { videoPreview.play(); }
+
+            const stream = videoPreview.captureStream();
+            const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            const chunks = [];
+
+            recorder.ondataavailable = (e) => chunks.push(e.data);
+
+            recorder.onstop = async () => {
+                resultDiv.innerHTML = "<i class='fa-solid fa-server'></i> Transmitting to Neural Engine...";
+                resultDiv.style.color = "#c9d1d9";
+                runBtn.innerHTML = "<i class='fa-solid fa-brain'></i> Analyzing Arrays...";
+
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const formData = new FormData();
+                formData.append('video', blob, 'capture.webm'); 
+                formData.append('mode', webActiveMode);
+                formData.append('start_time', 0.0); 
+
+                try {
+                    const response = await fetch('/api/analyze/', { method: 'POST', body: formData });
+                    const data = await response.json();
+
+                    if (data.error) {
+                        resultDiv.innerHTML = `<i class='fa-solid fa-circle-exclamation'></i> System Error: ${data.error}`;
+                        resultDiv.style.color = "#f85149";
+                    } else {
+                        if (data.status === "Fake") {
+                            resultDiv.innerHTML = `<span style="color: #f85149;"><i class="fa-solid fa-triangle-exclamation"></i> SYNTHETIC MEDIA DETECTED (${data.confidence}%)</span>`;
+                        } else {
+                            resultDiv.innerHTML = `<span style="color: #2ea043;"><i class="fa-solid fa-shield-check"></i> AUTHENTIC MEDIA VERIFIED (${data.confidence}%)</span>`;
+                        }
+
+                        // Render Graph
+                        graphContainer.innerHTML = ''; 
+                        if (data.breakdown) {
+                            graphContainer.style.display = 'flex';
+                            for (const [modelName, scores] of Object.entries(data.breakdown)) {
+                                const isFake = scores.fake > scores.real;
+                                const dominantScore = isFake ? scores.fake : scores.real;
+                                const percentage = (dominantScore * 100).toFixed(1);
+                                const barHeightCSS = (dominantScore * 50) + '%';
+                                
+                                const graphHTML = `
+                                    <div class="graph-column">
+                                        <div class="graph-title">${modelName}</div>
+                                        <div class="graph-box">
+                                            <div class="zero-line"></div>
+                                            <div class="${isFake ? 'bar-fake' : 'bar-real'}" style="height: ${barHeightCSS}"></div>
+                                        </div>
+                                        <div class="graph-percentage" style="color: ${isFake ? '#f85149' : '#2ea043'}">
+                                            ${percentage}%
+                                        </div>
+                                    </div>
+                                `;
+                                graphContainer.innerHTML += graphHTML;
+                            }
+                        }
+
+                        // RENDER EXPLAINABLE AI (XAI) EVIDENCE CARDS
+                        grid.innerHTML = '';
+                        if (data.breakdown && data.frames && data.frames.length > 0) {
+                            framesContainer.style.display = 'block';
+                            let frameIndex = 0;
+
+                            for (const [modelName, scores] of Object.entries(data.breakdown)) {
+                                const isFake = scores.fake > scores.real;
+                                const statusColor = isFake ? '#f85149' : '#2ea043';
+                                const statusText = isFake ? 'ANOMALY DETECTED' : 'CLEARED';
+                                
+                                let icon = 'fa-microchip';
+                                if (modelName.includes('Biometric')) icon = 'fa-users-viewfinder';
+                                else if (modelName.includes('Spatial')) icon = 'fa-object-group';
+                                else if (modelName.includes('Audio')) icon = 'fa-wave-square';
+
+                                const frameData = data.frames[frameIndex] || data.frames[data.frames.length - 1];
+                                if (frameIndex < data.frames.length - 1) frameIndex++;
+
+                                let visualOverlay = '';
+                                let imgFilter = '';
+                                
+                                if (modelName.includes('Biometric')) {
+                                    visualOverlay = `<div class="target-box" style="border-color: ${statusColor}; box-shadow: 0 0 10px ${statusColor} inset;"></div>`;
+                                } else if (modelName.includes('Spatial')) {
+                                    imgFilter = 'filter: contrast(150%) saturate(200%) hue-rotate(90deg);'; 
+                                    visualOverlay = `<div class="ela-scan-line" style="background: ${statusColor}; box-shadow: 0 0 10px ${statusColor};"></div>`;
+                                } else if (modelName.includes('Audio')) {
+                                    imgFilter = 'filter: grayscale(100%) opacity(0.3);';
+                                    visualOverlay = `
+                                        <div class="audio-waves" style="color: ${statusColor};">
+                                            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                                        </div>`;
+                                }
+
+                                const cardHTML = `
+                                    <div class="xai-card" style="border-top: 3px solid ${statusColor};">
+                                        <div class="xai-header">
+                                            <i class="fa-solid ${icon}"></i> ${modelName}
+                                        </div>
+                                        <div class="xai-image-wrapper">
+                                            <img src="data:image/jpeg;base64,${frameData}" style="${imgFilter}">
+                                            ${visualOverlay}
+                                        </div>
+                                        <div class="xai-footer" style="color: ${statusColor};">
+                                            ${statusText} (${(Math.max(scores.fake, scores.real)*100).toFixed(1)}%)
+                                        </div>
+                                    </div>
+                                `;
+                                grid.innerHTML += cardHTML;
+                            }
+                        } else {
+                            framesContainer.style.display = 'none';
+                        }
+                    }
+                } catch (err) {
+                    resultDiv.innerHTML = "<i class='fa-solid fa-link-slash'></i> Error establishing secure connection.";
+                    resultDiv.style.color = "#f85149";
+                } finally {
+                    updateWebButtonState(); 
+                }
+            };
+
+            recorder.start();
+            setTimeout(() => {
+                recorder.stop();
+                videoPreview.pause(); 
+            }, 5000); 
+        }
+    </script>
+</body>
+</html>
