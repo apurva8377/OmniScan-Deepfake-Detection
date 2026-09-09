@@ -38,16 +38,15 @@ Instead of mathematically aligning asynchronous tensors (which creates massive V
 
 ### Backend (Django + PyTorch)
 
-```bash
 # 1. Clone the repository
-git clone [https://github.com/apurva8377/OmniScan-Deepfake-Detection.git](https://github.com/apurva8377/OmniScan-Deepfake-Detection.git)
+git clone https://github.com/apurva8377/OmniScan-Deepfake-Detection.git
 cd OmniScan-Deepfake-Detection/backend_django
 
 # 2. Install dependencies
 pip install -r requirements.txt
 
 # 3. Run the API Server
-## Author
+python manage.py runserver
 
 ## Author
 
